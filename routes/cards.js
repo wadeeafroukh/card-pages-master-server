@@ -1,4 +1,4 @@
-const express = require("exress");
+const express = require("express");
 const Card = require("../models/Cards");
 const router = express.Router();
 const auth = require("../middleware/auth");
@@ -78,10 +78,10 @@ router.put("/:id", auth, async (req, res) => {
     let card = await Card.findOneAndUpdate(
       { _id: req.params.id, userId: req.payload._id },
       req.body,
-      { new: true }
+      { new: true },
     );
-    await card.save()
-    res.status(200).send(card)
+    await card.save();
+    res.status(200).send(card);
   } catch (error) {
     console.log(error);
     res.status(500).send("internal server error");
@@ -96,7 +96,7 @@ router.patch("/:id", auth, async (req, res) => {
     let card = await Card.findByIdAndUpdate(
       req.params.id,
       { bizNumber: req.body.bizNumber },
-      { new: true }
+      { new: true },
     );
     if (!card) return res.status(404).send("card not found");
 
@@ -107,7 +107,7 @@ router.patch("/:id", auth, async (req, res) => {
     res.status(500).send("internal server error");
   }
 });
-router.patch(":/id", auth, async (req, res) => {
+router.patch("/:id", auth, async (req, res) => {
   try {
     let card = await Card.findById(req.params.id);
     if (!card) return res.status(404).send("card not found");
