@@ -1,4 +1,3 @@
-const { required } = require("joi");
 const mongoose = require("mongoose");
 
 const cardSchema = new mongoose.Schema({
@@ -16,13 +15,11 @@ const cardSchema = new mongoose.Schema({
     houseNumber: { type: Number, required: true },
     zip: { type: Number, required: true },
   },
-  userId: { type: String, required: true },
-  likes: { type: Array, default: [] },
+  userId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User" },
+  likes: { type: [mongoose.Schema.Types.ObjectId], default: [] },
   isLiked: { type: Boolean, default: false },
-  _id: { type: String },
-  
 });
 
-const Card = mongoose.model("cards", cardSchema);
+const Card = mongoose.model("Card", cardSchema);
 
-module.exports = Card
+module.exports = Card;

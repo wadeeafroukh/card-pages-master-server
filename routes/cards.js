@@ -38,8 +38,6 @@ router.get("/", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   try {
-    const { error } = cardBodyValidation.validate(req.body);
-    if (error) return res.status(400).send(error.details[0].message);
     const card = await Card.findById(req.params.id);
     if (!card) return res.status(404).send("card not found");
     res.status(200).send(card);
@@ -66,7 +64,7 @@ router.post("/", auth, async (req, res) => {
     await card.save();
     res.status(201).send(card);
   } catch (error) {
-    console.log();
+    console.log(error);
     res.status(500).send("internal server error");
   }
 });
@@ -80,7 +78,8 @@ router.put("/:id", auth, async (req, res) => {
       req.body,
       { new: true },
     );
-    await card.save();
+    if (!card)
+      return res.status(404).send("card not found or not owned by user");
     res.status(200).send(card);
   } catch (error) {
     console.log(error);
@@ -88,7 +87,7 @@ router.put("/:id", auth, async (req, res) => {
   }
 });
 
-router.patch("/:id", auth, async (req, res) => {
+router.patch("/:id/biz", auth, async (req, res) => {
   try {
     if (!req.payload.isAdmin) return res.status(403).send("access denied");
     const { error } = bizBodyValidation.validate(req.body);
@@ -99,22 +98,23 @@ router.patch("/:id", auth, async (req, res) => {
       { new: true },
     );
     if (!card) return res.status(404).send("card not found");
-
-    await card.save();
     res.status(200).send(card);
   } catch (error) {
     console.log(error);
     res.status(500).send("internal server error");
   }
 });
-router.patch("/:id", auth, async (req, res) => {
+
+router.patch("/:id/like", auth, async (req, res) => {
   try {
     let card = await Card.findById(req.params.id);
     if (!card) return res.status(404).send("card not found");
     const userId = req.payload._id;
-    card.likes.includes(userId)
-      ? (card.likes = card.likes.filter((id) => id !== userId))
-      : card.likes.push(userId);
+    const idx = card.likes.findIndex(
+      (id) => id.toString() === userId.toString(),
+    );
+    if (idx !== -1) card.likes.splice(idx, 1);
+    else card.likes.push(userId);
     await card.save();
     res.status(200).send(card);
   } catch (error) {

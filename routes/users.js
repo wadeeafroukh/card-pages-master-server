@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const User = require("../models/user");
+const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const joi = require("joi");
 const _ = require("lodash");
@@ -69,7 +69,7 @@ router.post("/", async (req, res) => {
     await user.save();
     const token = jwt.sign(
       { isAdmin: user.isAdmin, _id: user._id, isBusiness: user.isBusiness },
-      process.env.JWTKEY
+      process.env.JWTKEY,
     );
     res.status(201).send(token);
   } catch (error) {
@@ -88,7 +88,7 @@ router.post("/login", async (req, res) => {
     if (!result) return res.status(400).send("Wrong email or password");
     const token = jwt.sign(
       { isAdmin: user.isAdmin, _id: user._id, isBusiness: user.isBusiness },
-      process.env.JWTKEY
+      process.env.JWTKEY,
     );
     res.status(200).send(token);
   } catch (error) {
@@ -114,7 +114,8 @@ router.get("/", auth, async (req, res) => {
     if (!req.payload.isAdmin) return res.status(403).send("Acess denied");
     const users = await User.find();
     if (!users) return res.status(404).send("No users found");
-    res.status(200).send(_.omit(user.toObject(), ["password", "__v"]));
+    const safe = users.map((u) => _.omit(u.toObject(), ["password", "__v"]));
+    res.status(200).send(safe);
   } catch (error) {
     console.log(error);
     res.status(500).send("Internal Server Error");
@@ -122,7 +123,8 @@ router.get("/", auth, async (req, res) => {
 });
 router.put("/:id", auth, async (req, res) => {
   try {
-    if (!req.payload.isAdmin && req.payload.id !== req.params.id) return res.status(403).send("Acess denied");
+    if (!req.payload.isAdmin && req.payload._id !== req.params.id)
+      return res.status(403).send("Acess denied");
     const { error } = userBodyValidation.validate(req.body);
     if (error) return res.status(400).send(error.details[0].message);
     let user = await User.findByIdAndUpdate(req.params.id, req.body, {
@@ -150,14 +152,14 @@ router.delete("/:id", auth, async (req, res) => {
 
 router.patch("/:id", auth, async (req, res) => {
   try {
-    if (!req.payload.isAdmin && req.payload.id !== req.params.id) return res.status(403).send("Acess denied");
+    if (!req.payload.isAdmin && req.payload._id !== req.params.id)
+      return res.status(403).send("Acess denied");
     let user = await User.findByIdAndUpdate(
       req.params.id,
       { isBusiness: req.body.isBusiness },
-      { new: true }
+      { new: true },
     );
     if (!user) return res.status(404).send("User not found");
-    await user.save();
     res.status(200).send(user);
   } catch (error) {
     console.log(error);

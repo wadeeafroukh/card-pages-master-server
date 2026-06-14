@@ -5,7 +5,6 @@ const port = process.env.PORT || 8000;
 const cors = require("cors");
 const cardsRouter = require("./routes/cards");
 const usersRouter = require("./routes/users");
-const authRouter = require("./middleware/auth");
 const mongoose = require("mongoose");
 
 app.use(cors());
@@ -22,7 +21,6 @@ mongoose
 
 app.use("/api/cards", cardsRouter);
 app.use("/api/users", usersRouter);
-app.use("/api/auth", authRouter);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

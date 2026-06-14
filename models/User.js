@@ -7,18 +7,18 @@ const userSchema = new mongoose.Schema({
     last: { type: String, required: true },
   },
   phone: { type: String, required: true },
-  email: { type: String, required: true, minLingth: 6, unique: true },
+  email: { type: String, required: true, minLength: 6, unique: true },
   password: { type: String, required: true, minLength: 7 },
   image: { type: String },
   address: {
-    street: { type: String, required: true },
+    street: { type: String },
     country: { type: String, required: true },
     city: { type: String },
     state: { type: String },
-    houseNumber: { type: String },
+    houseNumber: { type: Number },
     zip: { type: String, required: true },
   },
   isBusiness: { type: Boolean, default: false, required: true },
 });
-const User = mongoose.model("users", userSchema);
+const User = mongoose.model("User", userSchema);
 module.exports = User;
